@@ -32,7 +32,7 @@ class HLFConnection {
     constructor(cha) {
             this.client= hfc.loadFromConfig("network.yaml");
             this.channel = this.client.getChannel(cha);
-            this.Eventhubs = this.channel.getChannelEventHubsForOrg(this.client.getMspid());
+            this.eventHubs = this.client.getEventHubsForOrg(this.client.getMspid());
     }
 
     async login(name,pass) {
@@ -191,7 +191,7 @@ class HLFConnection {
                 let timeoutHandles = [];
 
     
-                this.Eventhubs.forEach((eh) => {
+                this.eventHubs.forEach((eh) => {
                     try {
                        //eh.connect();
                     }
@@ -300,7 +300,6 @@ class HLFConnection {
      * to them
      */
     _connectToEventHubs() {
-
         this.eventHubs.forEach((eventHub) => {
             eventHub.connect();
         });
