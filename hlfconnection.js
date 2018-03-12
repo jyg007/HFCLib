@@ -8,7 +8,7 @@ let path = require('path');
 
 let fs = require('fs-extra');
 
-function sleep(ms){
+async function sleep(ms){
     return new Promise(resolve=>{
         setTimeout(resolve,ms)
     })
@@ -144,7 +144,7 @@ class HLFConnection {
     
             do {
                 if (incident_n != 0 ) {
-                    sleep(5000);
+                    await sleep(15000);
                     logger.info("Nouvel essai");
                     //console.log(channel.getPeers());
                     //console.log(request.targets);
@@ -174,7 +174,12 @@ class HLFConnection {
                             if ((proposal_Response.message == "REQUEST_TIMEOUT" ) && (incident_n==2))   { 
                                 logger.error(proposal_Response.name + " " + proposal_Response.message + " sur " + listpeer[i]._name + ". Supression de la liste de requête");
                                 //request.targets.splice(i,1);
+                                one_good=true;
                             };
+                            var patt=new RegExp("premature");
+                            if (patt.test(proposal_Response.message)) {
+                                logger.info("demarrage du chaincode sur " + listpeer[i]._name );
+                            }
                          
                         } catch (err) {
                             logger.error('erreur dans le traitement des exceptions: ' + err.stack ? err.stack : err);
