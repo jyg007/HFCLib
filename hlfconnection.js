@@ -38,6 +38,11 @@ class HLFConnection {
             this.eventHubs = this.client.getEventHubsForOrg(this.client.getMspid());
     }
 
+
+    /**
+    * login a user using a user and password.  Password is optionnal if credentials are already present in the store
+    * credentials are retrieved from the CA of the user as described in the network.yaml file.
+    */
     async login(name,pass) {
         let tmpuser;
         try {
@@ -70,6 +75,9 @@ class HLFConnection {
     }
 
 
+    /**
+    * login a user using certificate and private key from the filesystem.
+    */
     async login_fromfile(name,file) {
         try {
             await this.client.initCredentialStores();
@@ -106,6 +114,22 @@ class HLFConnection {
        this. _connectToEventHubs();
     }
 
+
+    /**
+     * Invoke a "invoke" chaincode as described in the request object.  
+     *               request =   {
+     *                   chaincodeId: 'chaincodename',
+     *                   fcn: 'function of the chaincode',
+     *                   args: [ param1, param2 ],
+     *                   txId: tx_id
+     *               };
+     *
+     *   tx_id should be created before.  It can be done using the getTxId() call or getAdminTxId()
+     *
+     *  The call is synchonous.  It returns an array.  First member is the returned message and the second member is the return code.
+     *  0 indicates a sucessful transaction
+     * 
+     * */
     
     async  invoke(request) {
         try {
@@ -289,23 +313,32 @@ class HLFConnection {
         }                
     }
 
-
+    /** 
+    * Return a TxId object for normal transaction.  It will be used to create a request object.
+    */
     getTxId() {
         return this.client.newTransactionID(false);
     }
 
+    /** 
+    *  Return a TxId object for admin blockchain operations
+    */
     getAdminTxId() {
         return this.client.newTransactionID(true);
     }
 
-
+    /** 
+    *  Chaincode query.  Returns the result
+    */
     async query(request) {
         let payloads;
         payloads = await this.channel.queryByChaincode(request);
         return payloads;
     }
 
-        /**
+
+
+    /**
      * process the event hub defs to create event hubs and connect
      * to them
      */
