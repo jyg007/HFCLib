@@ -36,20 +36,27 @@ class HLFConnection {
     }
 
     async login(name,pass) {
+        let tmpuser;
         try {
             await this.client.initCredentialStores();
         }
         catch (err) {
             logger.error('Unable to initialize state store: ' + err.stack ? err.stack : err);
         }
-        tmpuser = await this.client.getUserContext(name,true);
-        
-        if (!tmpsur) {
-            tmpuser = await this.client.setUserContext({username:name, password: pass});
-        } else {
-            await this.client.setUserContext(tmpuser,true);
-        }
 
+        tmpuser = await this.client.getUserContext(name,false);
+        if (!tmpuser) {
+            tmpuser = await this.client.getUserContext(name,true);
+            if (!tmpsur) {
+                tmpuser = await this.client.setUserContext({username:name, password: pass});
+            } else {
+                await this.client.setUserContext(tmpuser,false);
+            }
+
+        } else {
+            await this.client.setUserContext(tmpuser,false);
+        };
+        
         try {
             await this.channel.initialize();
         }
