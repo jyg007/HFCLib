@@ -27,7 +27,10 @@ function readAllFiles(dir) {
 }
 
 
-
+/**
+ * Class representing a connection to a business network running on Hyperledger
+ * Fabric 1.1, using the Hyperledger fabric node sdk .
+ */
 class HLFConnection {
     constructor(cha) {
             this.client= hfc.loadFromConfig("network.yaml");
@@ -316,10 +319,6 @@ class HLFConnection {
                 this.eventHubs.forEach((eventHub, index) => {
                     if (eventHub.isconnected()) {
                         eventHub.disconnect();
-                    }
-                    // unregister any eventhub chaincode event registrations
-                    if (this.ccEvents[index]) {
-                        this.eventHubs[index].unregisterChaincodeEvent(this.ccEvents[index]);
                     }
                 });
             };
