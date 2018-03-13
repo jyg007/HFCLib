@@ -32,12 +32,12 @@ function readAllFiles(dir) {
  * Fabric 1.1, using the Hyperledger fabric node sdk .
  */
 class HLFConnection {
-    constructor(type,cha) {
+    constructor(type,cha,config="network.yaml") {
             if (type == "couchdb") {
                 hfc.setConfigSetting('key-value-store','fabric-client/lib/impl/CouchDBKeyValueStore.js');
             }
 
-            this.client= hfc.loadFromConfig("network.yaml");
+            this.client= hfc.loadFromConfig(config);
             this.channel = this.client.getChannel(cha);
             this.eventHubs = this.client.getEventHubsForOrg(this.client.getMspid());
     }
@@ -60,12 +60,20 @@ class HLFConnection {
         if (!this.user) {
             this.user = await this.client.getUserContext(name,true);
             if (!this.user) {
-                this.user = await this.client.setUserContext({username:name, password: pass});
+                try {
+                    // neither in memory, neither in store.  Need to enroll.
+                    this.user = await this.client.setUserContext({username:name, password: pass});
+                } catch (err) {
+                    //well all of this failed !
+                    throw new Error(err.message);
+                }
+
             } else {
+                // in store, just set the security context
                 await this.client.setUserContext(this.user,false);
             }
-
         } else {
+            // in memory, just set the security context
             await this.client.setUserContext(this.user,false);
         };
         
@@ -76,6 +84,7 @@ class HLFConnection {
             logger.error('Unable to get channel ' + cha + ' configuration: ' + err.stack ? err.stack : err);
         }
        this._connectToEventHubs();
+
     }
 
 
