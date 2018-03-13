@@ -48,7 +48,7 @@ class HLFConnection {
     * credentials are retrieved from the CA of the user as described in the network.yaml file.
     */
     async login(name,pass) {
-        let tmpuser;
+
         try {
             await this.client.initCredentialStores();
         }
@@ -56,17 +56,17 @@ class HLFConnection {
             logger.error('Unable to initialize state store: ' + err.stack ? err.stack : err);
         }
 
-        tmpuser = await this.client.getUserContext(name,false);
-        if (!tmpuser) {
-            tmpuser = await this.client.getUserContext(name,true);
-            if (!tmpuser) {
-                tmpuser = await this.client.setUserContext({username:name, password: pass});
+        this.user = await this.client.getUserContext(name,false);
+        if (!this.user) {
+            this.user = await this.client.getUserContext(name,true);
+            if (!this.user) {
+                this.user = await this.client.setUserContext({username:name, password: pass});
             } else {
-                await this.client.setUserContext(tmpuser,false);
+                await this.client.setUserContext(this.user,false);
             }
 
         } else {
-            await this.client.setUserContext(tmpuser,false);
+            await this.client.setUserContext(this.user,false);
         };
         
         try {
@@ -96,7 +96,7 @@ class HLFConnection {
         let certPath = path.join(file, "signcerts");
         let certPEM = readAllFiles(certPath)[0];
 
-        const tmpuser = await this.client.createUser({
+        this.user = await this.client.createUser({
             username: name,
             mspid: this.client.getMspid(),
             cryptoContent: {
@@ -105,7 +105,7 @@ class HLFConnection {
             }
         })
         
-        this.client.setUserContext(tmpuser);
+        this.client.setUserContext(this.user);
         
         try {
 
@@ -368,6 +368,14 @@ class HLFConnection {
             process.on('exit', this.exitListener);
         }
 
+    }
+
+    disconnectEventHubs() {
+        this.eventHubs.forEach((eventHub, index) => {
+            if (eventHub.isconnected()) {
+                eventHub.disconnect();
+            }
+        });
     }
 
 }
