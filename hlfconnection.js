@@ -32,7 +32,11 @@ function readAllFiles(dir) {
  * Fabric 1.1, using the Hyperledger fabric node sdk .
  */
 class HLFConnection {
-    constructor(cha) {
+    constructor(type,cha) {
+            if (type == "couchdb") {
+                hfc.setConfigSetting('key-value-store','fabric-client/lib/impl/CouchDBKeyValueStore.js');
+            }
+
             this.client= hfc.loadFromConfig("network.yaml");
             this.channel = this.client.getChannel(cha);
             this.eventHubs = this.client.getEventHubsForOrg(this.client.getMspid());
@@ -55,7 +59,7 @@ class HLFConnection {
         tmpuser = await this.client.getUserContext(name,false);
         if (!tmpuser) {
             tmpuser = await this.client.getUserContext(name,true);
-            if (!tmpsur) {
+            if (!tmpuser) {
                 tmpuser = await this.client.setUserContext({username:name, password: pass});
             } else {
                 await this.client.setUserContext(tmpuser,false);
