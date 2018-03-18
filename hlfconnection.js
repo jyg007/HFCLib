@@ -157,8 +157,8 @@ class HLFConnection {
     
             do {
                 if (incident_n != 0 ) {
+                    logger.info("Nouvel essai dans 15s");
                     await sleep(15000);
-                    logger.info("Nouvel essai");
                     //console.log(channel.getPeers());
                     //console.log(request.targets);
                 }
