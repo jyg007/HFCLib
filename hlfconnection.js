@@ -157,8 +157,8 @@ class HLFConnection {
     
             do {
                 if (incident_n != 0 ) {
-                    logger.info("Nouvel essai dans 15s");
                     await sleep(15000);
+                    logger.info("Nouvel essai");
                     //console.log(channel.getPeers());
                     //console.log(request.targets);
                 }
@@ -262,10 +262,10 @@ class HLFConnection {
     
                                 if (code !== 'VALID') {
                                     logger.error('The transaction was invalid, code = ' + code);
-                                    reject();
+                                    reject({ RC: code, address: eh.getPeerAddr()} );
                                 } else {
                                     logger.info('The transaction has been committed on peer ' + eh.getPeerAddr());
-                                    resolve();
+                                    resolve({ RC: code, address: eh.getPeerAddr()});
                                 }
                             },
                             (err) => {
@@ -290,9 +290,14 @@ class HLFConnection {
     
                         // Wait for results from events server
                         try {
-                            let results3 = await Promise.all(eventPromises);
+                            let results3 = await Promise.race(eventPromises);
+                            logger.info("Received tx code "+results3.RC+ " from "+ results3.address);
                             //logger.info('event promise all complete and testing complete');
-                            return [ answer , 0 ] ;
+                            if (results3.RC == 'VALID') {
+                                return { RC : 0 , Message :  answer } ;
+                            } else {
+                                return { RC : 100 , Message : answer , Details: results3  }  ;
+                            }
                         } catch(err) {
                             logger.error('Error received from some event servers ' + err);
                             return [ 'Failed to send transaction and get notifications within the timeout period.' + err,4 ] 
