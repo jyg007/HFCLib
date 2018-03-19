@@ -262,10 +262,10 @@ class HLFConnection {
     
                                 if (code !== 'VALID') {
                                     logger.error('The transaction was invalid, code = ' + code);
-                                    reject({ RC: code, address: eh.getPeerAddr()} );
+                                    reject({ rc: code, address: eh.getPeerAddr()} );
                                 } else {
                                     logger.info('The transaction has been committed on peer ' + eh.getPeerAddr());
-                                    resolve({ RC: code, address: eh.getPeerAddr()});
+                                    resolve({ rc: code, address: eh.getPeerAddr()});
                                 }
                             },
                             (err) => {
@@ -285,22 +285,21 @@ class HLFConnection {
                     const response2 = await this.channel.sendTransaction(request_orderer);
   
                     if (response2.status === 'SUCCESS') {
-                        //logger.info('Successfully sent transaction to the orderer.');
-                        
+                        //logger.info('Successfully sent transaction to the orderer.');              
     
                         // Wait for results from events server
                         try {
                             let results3 = await Promise.race(eventPromises);
                             logger.info("Received tx code "+results3.RC+ " from "+ results3.address);
                             //logger.info('event promise all complete and testing complete');
-                            if (results3.RC == 'VALID') {
-                                return { RC : 0 , Message :  answer } ;
+                            if (results3.rc == 'VALID') {
+                                return {rc : 0 , message :  answer } ;
                             } else {
-                                return { RC : 100 , Message : answer , Details: results3  }  ;
+                                return { rc : 100 , message : answer , details: results3  }  ;
                             }
                         } catch(err) {
                             logger.error('Error received from some event servers ' + err);
-                            return [ 'Failed to send transaction and get notifications within the timeout period.' + err,4 ] 
+                            return { rc: 4 , message : 'Failed to send transaction and get notifications within the timeout period.' + err } 
                         }
                     } else {
                         timeoutHandles.forEach((handle) => {
@@ -311,7 +310,7 @@ class HLFConnection {
                            // eh.disconnect();
                         });
                         logger.error('Failed to order the transaction. Error code: ' + response2.status);
-                        return [ 'Failed to order the transaction. Error code: ' + response2.status ,5 ];
+                        return { rc: 5 , message : 'Failed to order the transaction. Error code: ' + response2.status };
                     }    
                 } 
                 catch(err) {
@@ -323,16 +322,16 @@ class HLFConnection {
                         //eh.disconnect();
                     });
                     logger.error('Failed to send transaction due to error: ' + err.stack ? err.stack : err);
-                    return [ "Failed to send transaction",6 ];
+                    return { rc: 6 , message :  "Failed to send transaction" } ;
                 }
             } else {
                 logger.error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
-                return [ "Failed to send proposal",7 ];
+                return { rc:7 , message : "Failed to send proposal"};
             }
         }
         catch(err) {
                 logger.error('Failed to send proposal due to error: ' + err.stack ? err.stack : err);
-                return [ "Failed to send proposal", 8 ];
+                return { rc:8 , message: "Failed to send proposal" };
         }                
     }
 
