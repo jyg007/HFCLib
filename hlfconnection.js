@@ -221,7 +221,7 @@ class HLFConnection {
                 }
                 else {
                         logger.error('All proposals do not have matching read/write sets');
-                        return [ 'All proposals do not have matching read/write sets for '+ deployId , 3 ];
+                        return { rc : 3 , message:  'All proposals do not have matching read/write sets for '+ deployId };
                 }
             }
     
@@ -285,7 +285,7 @@ class HLFConnection {
                     const response2 = await this.channel.sendTransaction(request_orderer);
   
                     if (response2.status === 'SUCCESS') {
-                        //logger.info('Successfully sent transaction to the orderer.');              
+                        //logger.info('Successfully sent transaction to the orderer.');              u
     
                         // Wait for results from events server
                         try {
