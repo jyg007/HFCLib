@@ -221,7 +221,7 @@ class HLFConnection {
                 }
                 else {
                         logger.error('All proposals do not have matching read/write sets');
-                        return { rc : 3 , message:  'All proposals do not have matching read/write sets for '+ deployId };
+                        return { rc : 3 , message:  'All proposals do not have matching read/write sets for '+ request.txId.getTransactionID() };
                 }
             }
     
