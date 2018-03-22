@@ -290,7 +290,7 @@ class HLFConnection {
                         // Wait for results from events server
                         try {
                             let results3 = await Promise.race(eventPromises);
-                            logger.info("Received tx code "+results3.RC+ " from "+ results3.address);
+                            logger.info("Received tx code "+results3.rc+ " from "+ results3.address);
                             //logger.info('event promise all complete and testing complete');
                             if (results3.rc == 'VALID') {
                                 return {rc : 0 , message :  answer } ;
