@@ -192,7 +192,14 @@ class HLFConnection {
                             var patt=new RegExp("premature");
                             if (patt.test(proposal_Response.message)) {
                                 logger.info("demarrage du chaincode sur " + listpeer[i]._name );
+                            } else {
+                                patt=new RegExp("chaincode error");
+                                if (patt.test(proposal_Response.message)) {
+                                    logger.error("Error during chaincode execution");
+                                    one_good=true;
+                                }
                             }
+                        
                          
                         } catch (err) {
                             logger.error('erreur dans le traitement des exceptions: ' + err.stack ? err.stack : err);
