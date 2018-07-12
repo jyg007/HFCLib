@@ -59,6 +59,7 @@ class HLFConnection {
         this.user = await this.client.getUserContext(name,false);
         if (!this.user) {
             this.user = await this.client.getUserContext(name,true);
+
             if (!this.user) {
                 try {
                     // neither in memory, neither in store.  Need to enroll.
@@ -78,10 +79,18 @@ class HLFConnection {
         };
         
         try {
-            await this.channel.initialize();
+
+           // let key = this.user._signingIdentity._signer._key._key.prvKeyHex;
+           // let cert = this.user._signingIdentity._certificate;
+         
+            // set the material on the client to be used when building endpoints for the user
+           // this.client.setTlsClientCertAndKey(cert, key);
+            await this.channel.initialize({discover:true});
+            let res = await this.channel.getDiscoveryResults();
+//
         }
         catch (err) {
-            logger.error('Unable to get channel ' + cha + ' configuration: ' + err.stack ? err.stack : err);
+            logger.error('Unable to get channel configuration: ' + err.stack ? err.stack : err);
         }
        this._connectToEventHubs();
 
@@ -118,7 +127,7 @@ class HLFConnection {
         
         try {
 
-            await this.channel.initialize();
+            await this.channel.initialize({discover:true});
         }
         catch (err) {
             logger.error('Unable to get channel ' + cha + ' configuration: ' + err.stack ? err.stack : err);
@@ -158,7 +167,7 @@ class HLFConnection {
             do {
                 if (incident_n != 0 ) {
                     await sleep(15000);
-                    logger.info("Nouvel essai");
+                    logger.debug("Nouvel essai");
                     //console.log(channel.getPeers());
                     //console.log(request.targets);
                 }
@@ -271,7 +280,7 @@ class HLFConnection {
                                     logger.error('The transaction was invalid, code = ' + code);
                                     reject({ rc: code, address: eh.getPeerAddr()} );
                                 } else {
-                                    logger.info('The transaction has been committed on peer ' + eh.getPeerAddr());
+                                    logger.debug('The transaction has been committed on peer ' + eh.getPeerAddr());
                                     resolve({ rc: code, address: eh.getPeerAddr()});
                                 }
                             },
@@ -297,7 +306,7 @@ class HLFConnection {
                         // Wait for results from events server
                         try {
                             let results3 = await Promise.race(eventPromises);
-                            logger.info("Received tx code "+results3.rc+ " from "+ results3.address);
+                            logger.debug("Received tx code "+results3.rc+ " from "+ results3.address);
                             //logger.info('event promise all complete and testing complete');
                             if (results3.rc == 'VALID') {
                                 return {rc : 0 , message :  answer } ;
