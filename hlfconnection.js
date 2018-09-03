@@ -257,8 +257,7 @@ class HLFConnection {
                 // fail the test
                 let deployId = request.txId.getTransactionID();
     
-                let eventPromises = [];     *  useAdmin false or true (if true the usercontext must have admin permissions)
-
+                let eventPromises = [];
                 let timeoutHandles = [];
 
     
@@ -377,6 +376,7 @@ class HLFConnection {
         payloads = await this.channel.queryByChaincode(request);
         return payloads;
     }
+
 
     /** 
      *  Get transaction details queryTransaction.  Returns the ProcessedTransaction object (https://fabric-sdk-node.github.io/global.html#ProcessedTransaction__anchor)
