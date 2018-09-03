@@ -368,7 +368,8 @@ class HLFConnection {
     }
 
     /** 
-    *  Chaincode query.  Returns the result
+    *  Chaincode query (queryByChaincode).  Returns the result
+    *  arg: request object
     */
     async query(request) {
         let payloads;
@@ -377,43 +378,76 @@ class HLFConnection {
     }
 
     /** 
-     *  queryInfo.  Returns the blockchaininfo (https://fabric-sdk-node.github.io/global.html#BlockchainInfo)
+     *  Get transaction details queryTransaction.  Returns the ProcessedTransaction object (https://fabric-sdk-node.github.io/global.html#ProcessedTransaction__anchor)
+     *  args: 
+     *  tx_id transaction unique identifier
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
      */
-     async queryInfo(useAdmin) {
-         let blockchaininfo;
-         blockchaininfo = await this.channel.queryInfo(useAdmin);
-         return blockchaininfo;
-     }
+    async queryTransaction(tx_id,useAdmin=false) {
+        let processedTransaction;
+        processedTransaction = await this.channel.queryTransaction(tx_id,useAdmin);
+        return processedTransaction;
+    }
 
-     /** 
-      *  queryInstantiatedChaincodes.  Returns the ChaincodeQueryResponse (https://fabric-sdk-node.github.io/global.html#ChaincodeQueryResponse)
-      */
-      async queryInstantiatedChaincodes(useAdmin) {
-          let ChaincodeQueryResponse;
-          let listpeer=this.channel.getPeers();
-          ChaincodeQueryResponse = await this.channel.queryInstantiatedChaincodes(listpeer[0],useAdmin);
-          return ChaincodeQueryResponse; // chaincodeinfo array
-      }
+    /** 
+     *  Get enrolled user details .  Returns the ProcessedTransaction object (https://fabric-sdk-node.github.io/global.html#ProcessedTransaction__anchor)
+     *  args: 
+     *  enrollmentid user enrollmentid
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
+     */
+    async getOne(enrollmentid) {
+		let fabric_ca_client = this.client.getCertificateAuthority();
+        let caIdentityService = fabric_ca_client.newIdentityService();
+
+	    let serviceResponse;
+		serviceResponse = await caIdentityService.getOne(enrollmentid,this.user);
+        return serviceResponse;
+    }
+    
+
+
+    /** 
+     *  Get general info on the channel queryInfo.  Returns the blockchaininfo (https://fabric-sdk-node.github.io/global.html#BlockchainInfo)
+     *  args: 
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
+     */
+    async queryInfo(useAdmin) {
+        let blockchaininfo;
+        blockchaininfo = await this.channel.queryInfo(useAdmin);
+        return blockchaininfo;
+    }
+
+    /** 
+     *  Get list of instanciated chaincode queryInstantiatedChaincodes.  Returns the ChaincodeQueryResponse (https://fabric-sdk-node.github.io/global.html#ChaincodeQueryResponse)
+     *  default peer is used as target
+     *  args: 
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
+     */
+    async queryInstantiatedChaincodes(useAdmin) {
+        let ChaincodeQueryResponse;
+        let listpeer=this.channel.getPeers();
+        ChaincodeQueryResponse = await this.channel.queryInstantiatedChaincodes(listpeer[0],useAdmin);
+        return ChaincodeQueryResponse; // chaincodeinfo array
+    }
      
-      /** 
-       *  getPeers infos.  Returns the list of peer name and url
-       */
-       getPeersInfos() {
-    	   let peersInfos_res=[];
-           let listpeer=this.channel.getPeers();
-           for (let peer in listpeer) {
-        	   peersInfos_res.push( {name: listpeer[peer].getName(), url: listpeer[peer].getUrl() } );
-           }
-           return peersInfos_res;
-       }
-
-       /** 
-        *  getChannelName.  Returns the name o fthe channel
-        */
-       getChannelName() {
-            return this.channel.getName();
+    /** 
+     *  getPeers infos.  Returns the list of peer name and url
+     */
+    getPeersInfos() {
+        let peersInfos_res=[];
+        let listpeer=this.channel.getPeers();
+        for (let peer in listpeer) {
+        	peersInfos_res.push( {name: listpeer[peer].getName(), url: listpeer[peer].getUrl() } );
         }
-      
+        return peersInfos_res;
+    }
+
+    /** 
+     *  getChannelName.  Returns the name o fthe channel
+     */
+    getChannelName() {
+        return this.channel.getName();
+    }
       
     /**
      * process the event hub defs to create event hubs and connect
