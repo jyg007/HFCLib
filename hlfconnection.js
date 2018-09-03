@@ -257,7 +257,8 @@ class HLFConnection {
                 // fail the test
                 let deployId = request.txId.getTransactionID();
     
-                let eventPromises = [];
+                let eventPromises = [];     *  useAdmin false or true (if true the usercontext must have admin permissions)
+
                 let timeoutHandles = [];
 
     
@@ -390,28 +391,37 @@ class HLFConnection {
     }
 
     /** 
-     *  Get enrolled user details .  Returns the ProcessedTransaction object (https://fabric-sdk-node.github.io/global.html#ProcessedTransaction__anchor)
+     *  Get enrolled user details . 
      *  args: 
      *  enrollmentid user enrollmentid
-     *  useAdmin false or true (if true the usercontext must have admin permissions)
      */
     async getOne(enrollmentid) {
 		let fabric_ca_client = this.client.getCertificateAuthority();
         let caIdentityService = fabric_ca_client.newIdentityService();
 
-	    let serviceResponse;
-		serviceResponse = await caIdentityService.getOne(enrollmentid,this.user);
-        return serviceResponse;
+	    let userDetail;
+		userDetail = await caIdentityService.getOne(enrollmentid,this.user);
+        return userDetail;
     }
     
+    /** 
+     *  Get all enrolled users .
+     */
+    async getAll() {
+		let fabric_ca_client = this.client.getCertificateAuthority();
+        let caIdentityService = fabric_ca_client.newIdentityService();
 
-
+	    let usersList;
+		usersList = await caIdentityService.getAll(connection.user);
+        return usersList;
+    }
+    
     /** 
      *  Get general info on the channel queryInfo.  Returns the blockchaininfo (https://fabric-sdk-node.github.io/global.html#BlockchainInfo)
      *  args: 
      *  useAdmin false or true (if true the usercontext must have admin permissions)
      */
-    async queryInfo(useAdmin) {
+    async queryInfo(useAdmin=false) {
         let blockchaininfo;
         blockchaininfo = await this.channel.queryInfo(useAdmin);
         return blockchaininfo;
@@ -423,7 +433,7 @@ class HLFConnection {
      *  args: 
      *  useAdmin false or true (if true the usercontext must have admin permissions)
      */
-    async queryInstantiatedChaincodes(useAdmin) {
+    async queryInstantiatedChaincodes(useAdmin=false) {
         let ChaincodeQueryResponse;
         let listpeer=this.channel.getPeers();
         ChaincodeQueryResponse = await this.channel.queryInstantiatedChaincodes(listpeer[0],useAdmin);
