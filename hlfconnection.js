@@ -396,11 +396,11 @@ class HLFConnection {
      *  enrollmentid user enrollmentid
      */
     async getOne(enrollmentid) {
-		let fabric_ca_client = this.client.getCertificateAuthority();
+	let fabric_ca_client = this.client.getCertificateAuthority();
         let caIdentityService = fabric_ca_client.newIdentityService();
 
-	    let userDetail;
-		userDetail = await caIdentityService.getOne(enrollmentid,this.user);
+	let userDetail;
+	userDetail = await caIdentityService.getOne(enrollmentid,this.user);
         return userDetail;
     }
     
@@ -408,11 +408,11 @@ class HLFConnection {
      *  Get all enrolled users .
      */
     async getAll() {
-		let fabric_ca_client = this.client.getCertificateAuthority();
+	let fabric_ca_client = this.client.getCertificateAuthority();
         let caIdentityService = fabric_ca_client.newIdentityService();
 
-	    let usersList;
-		usersList = await caIdentityService.getAll(connection.user);
+	let usersList;
+	usersList = await caIdentityService.getAll(connection.user);
         return usersList;
     }
     
