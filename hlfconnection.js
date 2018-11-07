@@ -130,7 +130,7 @@ class HLFConnection {
             await this.channel.initialize({discover:true});
         }
         catch (err) {
-            logger.error('Unable to get channel ' + cha + ' configuration: ' + err.stack ? err.stack : err);
+            logger.error('Unable to get channel configuration: ' + err.stack ? err.stack : err);
         }
 
        this. _connectToEventHubs();
@@ -154,6 +154,7 @@ class HLFConnection {
      * */
     
     async  invoke(request) {
+        let proposal_errmsg;
         try {
             let all_good;
             let incident_n=0;
@@ -192,6 +193,7 @@ class HLFConnection {
                             //console.log(typeof proposal_Response);
                             //console.log(proposal_Response.name);
                             //console.log(typeof proposal_Response.message);
+                            //console.log(proposal_Response.message);
                             // Gestion erreur de connection sur un noeud par gestion du timeout
                             if ((proposal_Response.message == "REQUEST_TIMEOUT" ) && (incident_n==2))   { 
                                 logger.error(proposal_Response.name + " " + proposal_Response.message + " sur " + listpeer[i]._name + ". Supression de la liste de requête");
@@ -342,12 +344,12 @@ class HLFConnection {
                 }
             } else {
                 logger.error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
-                return { rc:7 , message : "Failed to send proposal"};
+                return { rc:7 , message : "Failed to send proposal "+(proposal_errmsg ||'')};
             }
         }
         catch(err) {
                 logger.error('Failed to send proposal due to error: ' + err.stack ? err.stack : err);
-                return { rc:8 , message: "Failed to send proposal" };
+                return { rc:8 , message: "Failed to send proposal "+(proposal_errmsg ||'') };
         }                
     }
 
@@ -366,7 +368,8 @@ class HLFConnection {
     }
 
     /** 
-    *  Chaincode query.  Returns the result
+    *  Chaincode query (queryByChaincode).  Returns the result
+    *  arg: request object
     */
     async query(request) {
         let payloads;
@@ -375,7 +378,87 @@ class HLFConnection {
     }
 
 
+    /** 
+     *  Get transaction details queryTransaction.  Returns the ProcessedTransaction object (https://fabric-sdk-node.github.io/global.html#ProcessedTransaction__anchor)
+     *  args: 
+     *  tx_id transaction unique identifier
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
+     */
+    async queryTransaction(tx_id,useAdmin=false) {
+        let processedTransaction;
+        processedTransaction = await this.channel.queryTransaction(tx_id,useAdmin);
+        return processedTransaction;
+    }
 
+    /** 
+     *  Get enrolled user details . 
+     *  args: 
+     *  enrollmentid user enrollmentid
+     */
+    async getOne(enrollmentid) {
+	let fabric_ca_client = this.client.getCertificateAuthority();
+        let caIdentityService = fabric_ca_client.newIdentityService();
+
+	let userDetail;
+	userDetail = await caIdentityService.getOne(enrollmentid,this.user);
+        return userDetail;
+    }
+    
+    /** 
+     *  Get all enrolled users .
+     */
+    async getAll() {
+	let fabric_ca_client = this.client.getCertificateAuthority();
+        let caIdentityService = fabric_ca_client.newIdentityService();
+
+	let usersList;
+	usersList = await caIdentityService.getAll(connection.user);
+        return usersList;
+    }
+    
+    /** 
+     *  Get general info on the channel queryInfo.  Returns the blockchaininfo (https://fabric-sdk-node.github.io/global.html#BlockchainInfo)
+     *  args: 
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
+     */
+    async queryInfo(useAdmin=false) {
+        let blockchaininfo;
+        blockchaininfo = await this.channel.queryInfo(useAdmin);
+        return blockchaininfo;
+    }
+
+    /** 
+     *  Get list of instanciated chaincode queryInstantiatedChaincodes.  Returns the ChaincodeQueryResponse (https://fabric-sdk-node.github.io/global.html#ChaincodeQueryResponse)
+     *  default peer is used as target
+     *  args: 
+     *  useAdmin false or true (if true the usercontext must have admin permissions)
+     */
+    async queryInstantiatedChaincodes(useAdmin=false) {
+        let ChaincodeQueryResponse;
+        let listpeer=this.channel.getPeers();
+        ChaincodeQueryResponse = await this.channel.queryInstantiatedChaincodes(listpeer[0],useAdmin);
+        return ChaincodeQueryResponse; // chaincodeinfo array
+    }
+     
+    /** 
+     *  getPeers infos.  Returns the list of peer name and url
+     */
+    getPeersInfos() {
+        let peersInfos_res=[];
+        let listpeer=this.channel.getPeers();
+        for (let peer in listpeer) {
+        	peersInfos_res.push( {name: listpeer[peer].getName(), url: listpeer[peer].getUrl() } );
+        }
+        return peersInfos_res;
+    }
+
+    /** 
+     *  getChannelName.  Returns the name o fthe channel
+     */
+    getChannelName() {
+        return this.channel.getName();
+    }
+      
     /**
      * process the event hub defs to create event hubs and connect
      * to them
